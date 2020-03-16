@@ -182,11 +182,27 @@ public class TupleDesc implements Serializable {
      */
     public static TupleDesc merge(TupleDesc td1, TupleDesc td2) {
         // some code goes here
-        for (int i = 0; i < td1.getSize(); i++)
+        if (td1 == null)
         {
-
+            return td2;
         }
-        return null;
+        else if (td2 == null)
+            {
+                return td1;
+            }
+        Type[] newType = new Type[td1.numFields() + td2.numFields()];
+        String[] newName = new String[td1.numFields() + td2.numFields()];
+        for (int i = 0; i < td1.numFields(); i++)
+        {
+            newType[i]=td1.getFieldType(i);
+            newName[i]=td1.getFieldName(i);
+        }
+        for (int i = 0; i < td2.numFields(); i++)
+        {
+            newType[i+td1.numFields()]=td2.getFieldType(i);
+            newName[i+td1.numFields()]=td2.getFieldName(i);
+        }
+        return new TupleDesc(newType,newName);
     }
 
     /**
@@ -202,7 +218,22 @@ public class TupleDesc implements Serializable {
 
     public boolean equals(Object o) {
         // some code goes here
-        return false;
+        if (o instanceof TupleDesc && ((TupleDesc) o).numFields() == this.numFields())
+        {
+            for (int i = 0; i < this.numFields(); i++)
+            {
+                if (((TupleDesc) o).getFieldName(i) != this.getFieldName(i) )
+                {
+                    return false;
+                }
+            }
+
+        }
+        else {
+            return false;
+        }
+
+        return true;
     }
 
     public int hashCode() {
@@ -220,6 +251,11 @@ public class TupleDesc implements Serializable {
      */
     public String toString() {
         // some code goes here
-        return "";
+        String astring=new String();
+        for (int i = 0; i <numFields() ; i++)
+        {
+            astring =astring.concat(items.get(i).fieldName);
+        }
+        return astring;
     }
 }
