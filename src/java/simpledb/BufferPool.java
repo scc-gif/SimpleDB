@@ -25,6 +25,8 @@ public class BufferPool {
     other classes. BufferPool should use the numPages argument to the
     constructor instead. */
     public static final int DEFAULT_PAGES = 50;
+    Page[] pages;
+    int used;
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -32,6 +34,8 @@ public class BufferPool {
      * @param numPages maximum number of pages in this buffer pool.
      */
     public BufferPool(int numPages) {
+        pages = new Page[numPages] ;
+        used=0;
         // some code goes here
     }
     
@@ -67,7 +71,14 @@ public class BufferPool {
     public Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {
         // some code goes here
-        return null;
+        if(used<pages.length)
+        {
+            used++;
+            return pages[used-1];
+        }
+        else {
+            throw new DbException("not enough");
+        }
     }
 
     /**
