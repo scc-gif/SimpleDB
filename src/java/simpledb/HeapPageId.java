@@ -3,6 +3,8 @@ package simpledb;
 /** Unique identifier for HeapPage objects. */
 public class HeapPageId implements PageId {
 
+    int tableid;
+    int pgno;
     /**
      * Constructor. Create a page id structure for a specific page of a
      * specific table.
@@ -12,12 +14,14 @@ public class HeapPageId implements PageId {
      */
     public HeapPageId(int tableId, int pgNo) {
         // some code goes here
+        tableid=tableId;
+        pgno=pgNo;
     }
 
     /** @return the table associated with this PageId */
     public int getTableId() {
         // some code goes here
-        return 0;
+        return tableid;
     }
 
     /**
@@ -26,7 +30,7 @@ public class HeapPageId implements PageId {
      */
     public int getPageNumber() {
         // some code goes here
-        return 0;
+        return pgno;
     }
 
     /**
@@ -34,22 +38,26 @@ public class HeapPageId implements PageId {
      *   the table number and the page number (needed if a PageId is used as a
      *   key in a hash table in the BufferPool, for example.)
      * @see BufferPool
+     * 返回此页的哈希代码
      */
     public int hashCode() {
         // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        return pgno;
     }
 
-    /**
-     * Compares one PageId to another.
-     *
-     * @param o The object to compare against (must be a PageId)
-     * @return true if the objects are equal (e.g., page numbers and table
-     *   ids are the same)
-     */
+        /**
+         * Compares one PageId to another.
+         *
+         * @param o The object to compare against (must be a PageId)
+         * @return true if the objects are equal (e.g., page numbers and table
+         *   ids are the same)
+         *   一个页面id和另一个页面id比较是否相等 o必须是pageid而且页码和表id要相等
+         */
     public boolean equals(Object o) {
         // some code goes here
-        return false;
+        boolean x;
+        x= o instanceof HeapPageId && pgno ==((HeapPageId) o).pgno && tableid==((HeapPageId) o).tableid;
+        return x;
     }
 
     /**
