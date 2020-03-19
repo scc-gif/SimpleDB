@@ -11,6 +11,10 @@ public class SeqScan implements OpIterator {
 
     private static final long serialVersionUID = 1L;
 
+    TransactionId atid;
+    int atableid;
+    String atableAlias;
+    DbFileIterator tpiterator;
     /**
      * Creates a sequential scan over the specified table as a part of the
      * specified transaction.
@@ -29,6 +33,11 @@ public class SeqScan implements OpIterator {
      */
     public SeqScan(TransactionId tid, int tableid, String tableAlias) {
         // some code goes here
+        atid=tid;
+        atableid=tableid;
+        atableAlias=tableAlias;
+        HeapFile tmp = (HeapFile) Database.getCatalog().getDatabaseFile(tableid);
+        tpiterator = tmp.iterator(tid);
     }
 
     /**
@@ -46,7 +55,7 @@ public class SeqScan implements OpIterator {
     public String getAlias()
     {
         // some code goes here
-        return null;
+        return atableAlias;
     }
 
     /**
@@ -62,6 +71,11 @@ public class SeqScan implements OpIterator {
      *            tableAlias.null, or null.null).
      */
     public void reset(int tableid, String tableAlias) {
+        atableid=tableid;
+        atableAlias=tableAlias;
+        HeapFile tmp = (HeapFile) Database.getCatalog().getDatabaseFile(tableid);
+        tpiterator = tmp.iterator(atid);
+
         // some code goes here
     }
 
@@ -71,6 +85,7 @@ public class SeqScan implements OpIterator {
 
     public void open() throws DbException, TransactionAbortedException {
         // some code goes here
+        tpiterator.open();
     }
 
     /**
@@ -83,28 +98,57 @@ public class SeqScan implements OpIterator {
      * @return the TupleDesc with field names from the underlying HeapFile,
      *         prefixed with the tableAlias string from the constructor.
      */
+    /**
+
+     *从基础HeapFile返回具有字段名的TupleDesc，
+
+     *以构造函数中的tableAlias字符串作为前缀。这个前缀
+
+     *将包含字段的表与
+
+     *名字。别名和名称应该用“.”字符分隔
+
+     *（例如，“alias.fieldName”）。
+
+     *
+
+     *@从底层HeapFile返回带有字段名的TupleDesc，
+
+     *以构造函数中的tableAlias字符串作为前缀。
+
+     */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        TupleDesc tmp=Database.getCatalog().getTupleDesc(atableid);
+        Type[] t=new Type[tmp.numFields()];
+        String[] name=new String[tmp.numFields()];
+        for (int i = 0; i <tmp.numFields() ; i++)
+        {
+            t[i]=tmp.getFieldType(i);
+            name[i]=atableAlias+"."+tmp.getFieldName(i);
+        }
+        return new TupleDesc(t,name);
     }
 
     public boolean hasNext() throws TransactionAbortedException, DbException {
         // some code goes here
-        return false;
+        return tpiterator.hasNext();
     }
 
     public Tuple next() throws NoSuchElementException,
             TransactionAbortedException, DbException {
         // some code goes here
-        return null;
+        return tpiterator.next();
     }
 
     public void close() {
         // some code goes here
+        tpiterator.close();
     }
 
     public void rewind() throws DbException, NoSuchElementException,
             TransactionAbortedException {
         // some code goes here
+        tpiterator.rewind();
     }
 }

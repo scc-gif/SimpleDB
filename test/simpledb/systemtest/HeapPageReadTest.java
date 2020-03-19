@@ -1,5 +1,6 @@
-package simpledb;
+package systemtest;
 
+import simpledb.*;
 import simpledb.TestUtil.SkeletonFile;
 import simpledb.systemtest.SimpleDbTestBase;
 import simpledb.systemtest.SystemTestUtil;

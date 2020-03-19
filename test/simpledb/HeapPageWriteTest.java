@@ -15,6 +15,7 @@ import org.junit.Test;
 import simpledb.TestUtil.SkeletonFile;
 import simpledb.systemtest.SimpleDbTestBase;
 import simpledb.systemtest.SystemTestUtil;
+import systemtest.HeapPageReadTest;
 
 public class HeapPageWriteTest extends SimpleDbTestBase {
 
