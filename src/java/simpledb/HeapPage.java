@@ -3,7 +3,6 @@ package simpledb;
 import java.util.*;
 import java.io.*;
 
-
 /**
  * Each instance of HeapPage stores data for one page of HeapFiles and 
  * implements the Page interface that is used by BufferPool.
@@ -68,7 +67,7 @@ public class HeapPage implements Page {
     */
     private int getNumTuples() {        
         // some code goes here
-        return 0;
+        return (int) BufferPool.getPageSize() * 8/ (this.td.getSize() * 8 + 1);
 
 
     }
@@ -80,7 +79,7 @@ public class HeapPage implements Page {
     private int getHeaderSize() {        
         
         // some code goes here
-        return 0;
+        return (int) getNumTuples()/8;
                  
     }
     
