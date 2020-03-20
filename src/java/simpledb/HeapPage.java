@@ -284,7 +284,16 @@ public class HeapPage implements Page {
      */
     public int getNumEmptySlots() {
         // some code goes here
-        return 0;
+        int num=0;
+        for (int i = 0; i <header.length ; i++)
+        {
+            for(int j=0;j<8;j++) {
+                if (8 * i + j + 1 > tuples.length) break;
+                else if ((header[i] & (1 << j)) != 0) num++;
+
+            }
+        }
+        return getNumTuples()-num;
     }
 
     /**
@@ -292,7 +301,7 @@ public class HeapPage implements Page {
      */
     public boolean isSlotUsed(int i) {
         // some code goes here
-        return false;
+        return (header[i / 8] & (1 << (i % 8))) != 0;
     }
 
     /**
@@ -306,11 +315,26 @@ public class HeapPage implements Page {
     /**
      * @return an iterator over all tuples on this page (calling remove on this iterator throws an UnsupportedOperationException)
      * (note that this iterator shouldn't return tuples in empty slots!)
+     * **
+     *
+     * *@return遍历此页上所有元组的迭代器（在此迭代器上调用remove将引发UnsupportedOperationException）
+     *
+     * *（注意，这个迭代器不应该返回空槽中的元组！）
      */
+
     public Iterator<Tuple> iterator() {
         // some code goes here
 
-        return null;
+        List<Tuple> list = new ArrayList();
+        for (int i = 0; i < tuples.length; i++)
+        {
+            if (isSlotUsed(i))
+            {
+                list.add(tuples[i]);
+            }
+        }
+        return list.iterator();
+
     }
 
 }
