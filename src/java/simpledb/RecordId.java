@@ -9,7 +9,8 @@ import java.io.Serializable;
 public class RecordId implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    PageId apid;
+    int atupleno;
     /**
      * Creates a new RecordId referring to the specified PageId and tuple
      * number.
@@ -22,6 +23,8 @@ public class RecordId implements Serializable {
     PageId pidx;
     int tuplenox;
     public RecordId(PageId pid, int tupleno) {
+        apid=pid;
+        atupleno=tupleno;
         // some code goes here
         pidx=pid;
         tuplenox=tupleno;
@@ -48,6 +51,13 @@ public class RecordId implements Serializable {
      * tuple.
      * 
      * @return True if this and o represent the same tuple
+     * 如果两个RecordId对象表示同一个
+     *
+     * *元组。
+     *
+     * *
+     *
+     * *@return True如果this和o代表同一元组
      */
     @Override
     public boolean equals(Object o) {
