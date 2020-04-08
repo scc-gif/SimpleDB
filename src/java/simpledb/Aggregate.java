@@ -13,12 +13,12 @@ public class Aggregate extends Operator {
 
     /**
      * Constructor.
-     * 
+     *
      * Implementation hint: depending on the type of afield, you will want to
      * construct an {@link IntegerAggregator} or {@link StringAggregator} to help
      * you with your implementation of readNext().
-     * 
-     * 
+     *
+     *
      * @param child
      *            The OpIterator that is feeding us tuples.
      * @param afield
@@ -29,8 +29,17 @@ public class Aggregate extends Operator {
      * @param aop
      *            The aggregation operator to use
      */
+    OpIterator achild;
+    int aafield;
+    int agfield;
+    Aggregator.Op aaop;
+    OpIterator tupleAggregation;
     public Aggregate(OpIterator child, int afield, int gfield, Aggregator.Op aop) {
 	// some code goes here
+        achild=child;
+        aafield=afield;
+        agfield=gfield;
+        aaop=aop;
     }
 
     /**
@@ -40,7 +49,7 @@ public class Aggregate extends Operator {
      * */
     public int groupField() {
 	// some code goes here
-	return -1;
+	return agfield;
     }
 
     /**
@@ -50,7 +59,10 @@ public class Aggregate extends Operator {
      * */
     public String groupFieldName() {
 	// some code goes here
-	return null;
+        if(agfield==Aggregator.NO_GROUPING)
+	        return null;
+        else
+            return achild.getTupleDesc().getFieldName(agfield);
     }
 
     /**
@@ -58,7 +70,7 @@ public class Aggregate extends Operator {
      * */
     public int aggregateField() {
 	// some code goes here
-	return -1;
+	return aafield;
     }
 
     /**
@@ -67,7 +79,7 @@ public class Aggregate extends Operator {
      * */
     public String aggregateFieldName() {
 	// some code goes here
-	return null;
+	return achild.getTupleDesc().getFieldName(aafield);
     }
 
     /**
@@ -75,16 +87,41 @@ public class Aggregate extends Operator {
      * */
     public Aggregator.Op aggregateOp() {
 	// some code goes here
-	return null;
+	return aaop;
     }
 
-    public static String nameOfAggregatorOp(Aggregator.Op aop) {
-	return aop.toString();
+    public static String nameOfAggregatorOp(Aggregator.Op aop)
+    {
+	    return aop.toString();
     }
 
     public void open() throws NoSuchElementException, DbException,
 	    TransactionAbortedException {
 	// some code goes here
+        super.open();
+        achild.open();
+        Type tmp = achild.getTupleDesc().getFieldType(aafield);
+        Aggregator myAgg;
+        if (tmp == Type.INT_TYPE) {
+            myAgg = new IntegerAggregator(
+                    agfield,
+                    agfield == -1 ? null : achild.getTupleDesc().getFieldType(agfield),
+                    aafield,
+                    aaop
+            );
+        } else {
+            myAgg = new StringAggregator(
+                    agfield,
+                    agfield == -1 ? null : achild.getTupleDesc().getFieldType(agfield),
+                    aafield,
+                    aaop
+            );
+        }
+        while (achild.hasNext()) {
+            myAgg.mergeTupleIntoGroup(achild.next());
+        }
+        tupleAggregation = myAgg.iterator();
+        tupleAggregation.open();
     }
 
     /**
@@ -96,11 +133,14 @@ public class Aggregate extends Operator {
      */
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
 	// some code goes here
-	return null;
+        if (tupleAggregation.hasNext())
+            return tupleAggregation.next();
+	    return null;
     }
 
     public void rewind() throws DbException, TransactionAbortedException {
 	// some code goes here
+        tupleAggregation.rewind();
     }
 
     /**
@@ -108,7 +148,7 @@ public class Aggregate extends Operator {
      * this will have one field - the aggregate column. If there is a group by
      * field, the first field will be the group by field, and the second will be
      * the aggregate value column.
-     * 
+     *
      * The name of an aggregate column should be informative. For example:
      * "aggName(aop) (child_td.getFieldName(afield))" where aop and afield are
      * given in the constructor, and child_td is the TupleDesc of the child
@@ -116,22 +156,26 @@ public class Aggregate extends Operator {
      */
     public TupleDesc getTupleDesc() {
 	// some code goes here
-	return null;
+	return achild.getTupleDesc();
     }
 
     public void close() {
 	// some code goes here
+        super.close();
     }
 
     @Override
     public OpIterator[] getChildren() {
 	// some code goes here
-	return null;
+        OpIterator[] tmp=new OpIterator[1];
+        tmp[0]=achild;
+        return tmp;
     }
 
     @Override
     public void setChildren(OpIterator[] children) {
 	// some code goes here
+        achild=children[0];
     }
-    
+
 }
