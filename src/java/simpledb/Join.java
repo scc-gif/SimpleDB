@@ -20,13 +20,19 @@ public class Join extends Operator {
      * @param child2
      *            Iterator for the right(inner) relation to join
      */
+    JoinPredicate ap;
+    OpIterator achild1;
+    OpIterator achild2;
     public Join(JoinPredicate p, OpIterator child1, OpIterator child2) {
         // some code goes here
+        ap=p;
+        achild1=child1;
+        achild2=child2;
     }
 
     public JoinPredicate getJoinPredicate() {
         // some code goes here
-        return null;
+        return ap;
     }
 
     /**
@@ -36,7 +42,7 @@ public class Join extends Operator {
      * */
     public String getJoinField1Name() {
         // some code goes here
-        return null;
+        return achild1.getTupleDesc().getFieldName(ap.getField1());
     }
 
     /**
@@ -46,7 +52,7 @@ public class Join extends Operator {
      * */
     public String getJoinField2Name() {
         // some code goes here
-        return null;
+        return achild2.getTupleDesc().getFieldName(ap.getField2());
     }
 
     /**
@@ -55,20 +61,28 @@ public class Join extends Operator {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        return TupleDesc.merge(achild1.getTupleDesc(),achild2.getTupleDesc());
     }
 
     public void open() throws DbException, NoSuchElementException,
             TransactionAbortedException {
+        super.open();
+        achild1.open();
+        achild2.open();
         // some code goes here
     }
 
     public void close() {
+        super.close();
+        achild1.close();
+        achild2.close();
         // some code goes here
     }
 
     public void rewind() throws DbException, TransactionAbortedException {
         // some code goes here
+        achild2.rewind();
+        achild1.rewind();
     }
 
     /**
@@ -89,20 +103,56 @@ public class Join extends Operator {
      * @return The next matching tuple.
      * @see JoinPredicate#filter
      */
+    Tuple tmp1=null;
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
         // some code goes here
-        return null;
+        Tuple ans =null;
+        while(achild1.hasNext() || achild2.hasNext())
+        {
+            if(!achild2.hasNext() || tmp1==null)
+            {
+                tmp1=achild1.next();
+                achild2.rewind();
+                achild2.open();
+            }
+            while(achild2.hasNext())
+            {
+                Tuple tmp2=achild2.next();
+                if(ap.filter(tmp1,tmp2))
+                {
+                    int num1=tmp1.getTupleDesc().numFields();
+                    int num2=tmp2.getTupleDesc().numFields();
+                    ans=new Tuple(getTupleDesc());
+                    for (int i = 0; i < num1; i++)
+                    {
+                        ans.setField(i,tmp1.getField(i));
+                    }
+                    for (int i = 0; i <num2 ; i++)
+                    {
+                        ans.setField(i+num1,tmp2.getField(i));
+                    }
+                    ans.setRecordId(tmp1.getRecordId());
+                    return ans;
+                }
+            }
+        }
+        return ans;
     }
 
     @Override
     public OpIterator[] getChildren() {
         // some code goes here
-        return null;
+        OpIterator [] opit =new OpIterator[2];
+        opit[0]=achild1;
+        opit[1]=achild2;
+        return opit;
     }
 
     @Override
     public void setChildren(OpIterator[] children) {
         // some code goes here
+        achild1=children[0];
+        achild2=children[1];
     }
 
 }
