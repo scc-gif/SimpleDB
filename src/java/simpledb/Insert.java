@@ -1,5 +1,7 @@
 package simpledb;
 
+import java.io.IOException;
+
 /**
  * Inserts tuples read from the child operator into the tableId specified in the
  * constructor
@@ -21,26 +23,38 @@ public class Insert extends Operator {
      *             if TupleDesc of child differs from table into which we are to
      *             insert.
      */
+    OpIterator achild;
+    int tbaleid;
     public Insert(TransactionId t, OpIterator child, int tableId)
             throws DbException {
         // some code goes here
+        achild=child;
+        tbaleid=tableId;
+        if (!child.getTupleDesc().equals(Database.getCatalog().getTupleDesc(tableId))) {
+            throw new DbException("TupleDesc of child differs from table into which we are to insert");
+        }
     }
 
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        return IntegerAggregator.getNewIntTuple(0).getTupleDesc();
     }
 
     public void open() throws DbException, TransactionAbortedException {
         // some code goes here
+        super.open();
+        achild.open();
     }
 
     public void close() {
         // some code goes here
+        super.close();
+        achild.close();
     }
 
     public void rewind() throws DbException, TransactionAbortedException {
         // some code goes here
+        achild.rewind();
     }
 
     /**
@@ -56,19 +70,37 @@ public class Insert extends Operator {
      * @see Database#getBufferPool
      * @see BufferPool#insertTuple
      */
+    int callednum=0;
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
         // some code goes here
-        return null;
+        if (callednum != 0)
+            return null;
+        callednum++;
+        int num = 0;
+        try {
+
+
+            while (achild.hasNext()) {
+                num++;
+                Database.getBufferPool().insertTuple(null, tbaleid, achild.next());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return IntegerAggregator.getNewIntTuple(num);
     }
 
     @Override
     public OpIterator[] getChildren() {
         // some code goes here
-        return null;
+        OpIterator[] tmp = new OpIterator[1];
+        tmp[0] = achild;
+        return tmp;
     }
 
     @Override
     public void setChildren(OpIterator[] children) {
         // some code goes here
+        achild=children[0];
     }
 }
