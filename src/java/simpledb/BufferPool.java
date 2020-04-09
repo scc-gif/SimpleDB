@@ -143,6 +143,7 @@ public class BufferPool {
      * @param tableId the table to add the tuple to
      * @param t the tuple to add
      */
+
     public void insertTuple(TransactionId tid, int tableId, Tuple t)
         throws DbException, IOException, TransactionAbortedException {
         // some code goes here
@@ -152,6 +153,7 @@ public class BufferPool {
         for (Page page : u) {
             totpage.put(page.getId(), page);
         }
+
     }
 
     /**
@@ -228,5 +230,6 @@ public class BufferPool {
         // some code goes here
         // not necessary for lab1
     }
+
 
 }
