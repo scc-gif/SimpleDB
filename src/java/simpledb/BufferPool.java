@@ -2,6 +2,8 @@ package simpledb;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
+
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,6 +31,9 @@ public class BufferPool {
     ConcurrentHashMap<PageId,Page> totpage;
     Page[] pages;
     int used;
+    int numpage;
+    ConcurrentHashMap<PageId, Integer> usedTime;
+    int nowTime=0;
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -36,9 +41,9 @@ public class BufferPool {
      * @param numPages maximum number of pages in this buffer pool.
      */
     public BufferPool(int numPages) {
-        pages = new Page[numPages] ;
-        used=0;
+        numpage=numPages;
         totpage=new ConcurrentHashMap<>();
+        usedTime=new ConcurrentHashMap<>();
         // some code goes here
     }
 
@@ -72,16 +77,23 @@ public class BufferPool {
      * @param perm the requested permissions on the page
      */
     public Page getPage(TransactionId tid, PageId pid, Permissions perm)
-        throws TransactionAbortedException, DbException {
+        throws TransactionAbortedException, DbException, IOException {
         // some code goes here
-        if(used<pages.length)
-        {
-            used++;
-            return pages[used-1];
+        usedTime.put(pid, ++nowTime);
+        if (totpage.get(pid) != null) {
+            return totpage.get(pid);
         }
-        else {
-            throw new DbException("not enough");
+        try {
+            if (totpage.size() == numpage) {
+                evictPage();
+            }
+            Page needPut = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);
+            totpage.put(needPut.getId(), needPut);
+            return needPut;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     /**
@@ -229,6 +241,20 @@ public class BufferPool {
     private synchronized  void evictPage() throws DbException {
         // some code goes here
         // not necessary for lab1
+        PageId now=null;
+        for(PageId i:usedTime.keySet())
+        {
+            if(now==null||usedTime.get(i)<usedTime.get(now))
+                now=i;
+        }
+        try {
+            assert now != null;
+            flushPage(now);
+            discardPage(now);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
