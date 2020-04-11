@@ -91,8 +91,8 @@ public class BufferPool {
             totpage.put(needPut.getId(), needPut);
             return needPut;
         } catch (IOException e) {
-            e.printStackTrace();
-            
+
+
         }
         return null;
     }
