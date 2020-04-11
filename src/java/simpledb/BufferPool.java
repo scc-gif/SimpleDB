@@ -86,6 +86,7 @@ public class BufferPool {
         try {
             if (totpage.size() == numpage) {
                 evictPage();
+                HeapPage p = (HeapPage) Database.getBufferPool().getPage(null, pid, null);
             }
             Page needPut = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);
             totpage.put(needPut.getId(), needPut);
@@ -203,7 +204,9 @@ public class BufferPool {
     public synchronized void flushAllPages() throws IOException {
         // some code goes here
         // not necessary for lab1
-
+        for (PageId i : totpage.keySet()) {
+            flushPage(i);
+        }
     }
 
     /** Remove the specific page id from the buffer pool.
@@ -217,6 +220,8 @@ public class BufferPool {
     public synchronized void discardPage(PageId pid) {
         // some code goes here
         // not necessary for lab1
+        totpage.remove(pid);
+        usedTime.remove(pid);
     }
 
     /**
@@ -226,6 +231,19 @@ public class BufferPool {
     private synchronized  void flushPage(PageId pid) throws IOException {
         // some code goes here
         // not necessary for lab1
+        PageId now=null;
+        for(PageId i:usedTime.keySet())
+        {
+            if(now==null||usedTime.get(i)<usedTime.get(now))
+                now=i;
+        }
+        try {
+            assert now != null;
+            flushPage(now);
+            discardPage(now);
+        } catch (IOException e) {
+
+        }
     }
 
     /** Write all pages of the specified transaction to disk.

@@ -129,14 +129,14 @@ public class HeapFile implements DbFile {
 
     // see DbFile.java for javadocs
     public ArrayList<Page> deleteTuple(TransactionId tid, Tuple t) throws DbException,
-            TransactionAbortedException {
+            TransactionAbortedException, IOException {
         // some code goes here
         if (t == null
                 || t.getRecordId().getPageId().getTableId() != getId()
                 || t.getRecordId().getPageId().getPageNumber() < 0
                 || t.getRecordId().getPageId().getPageNumber() >= numPages())
         throw new DbException("he tuple cannot be deleted or is not a member of the file");
-        HeapPage tmp = ((HeapPage) Database.getBufferPool().getPage(tid, t.getRecordId().getPageId(), null));
+        HeapPage tmp = (HeapPage) Database.getBufferPool().getPage(tid, t.getRecordId().getPageId(), null);
         tmp.deleteTuple(t);
         tmp.markDirty(true, tid);
         ArrayList<Page> output = new ArrayList<>();
@@ -230,6 +230,8 @@ public class HeapFile implements DbFile {
             }
             return t;
         } catch (TransactionAbortedException | DbException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
