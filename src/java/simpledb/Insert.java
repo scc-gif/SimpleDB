@@ -78,14 +78,12 @@ public class Insert extends Operator {
         callednum++;
         int num = 0;
         try {
-
-
             while (achild.hasNext()) {
                 num++;
                 Database.getBufferPool().insertTuple(null, tbaleid, achild.next());
             }
         } catch (IOException e) {
-
+            e.printStackTrace();
         }
         return IntegerAggregator.getNewIntTuple(num);
     }

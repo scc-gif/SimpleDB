@@ -72,7 +72,7 @@ public class Delete extends Operator {
                 Database.getBufferPool().deleteTuple(null,u);
                 num++;
             } catch (IOException e) {
-
+                e.printStackTrace();
             }
 
         }
@@ -93,5 +93,6 @@ public class Delete extends Operator {
         // some code goes here
         achild=children[0];
     }
+    
 
 }
