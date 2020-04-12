@@ -21,9 +21,13 @@ public class Delete extends Operator {
      */
     OpIterator achild;
     int callednum;
+    TransactionId at;
+
     public Delete(TransactionId t, OpIterator child) {
         // some code goes here
         achild=child;
+        at=t;
+        callednum=0;
     }
 
     public TupleDesc getTupleDesc() {
@@ -35,6 +39,7 @@ public class Delete extends Operator {
         // some code goes here
         super.open();
         achild.open();
+
     }
 
     public void close() {
@@ -93,6 +98,6 @@ public class Delete extends Operator {
         // some code goes here
         achild=children[0];
     }
-    
+
 
 }

@@ -3,6 +3,7 @@ package simpledb;
 import java.io.*;
 import java.util.*;
 
+
 /**
  * HeapFile is an implementation of a DbFile that stores a collection of tuples
  * in no particular order. Tuples are stored on pages, each of which is a fixed
@@ -69,22 +70,46 @@ public class HeapFile implements DbFile {
     // see DbFile.java for javadocs
     public Page readPage(PageId pid) {
         // some code goes here
-        try {
-            byte[] data = new byte[BufferPool.getPageSize()];
-            FileInputStream ss = new FileInputStream(afile);
-            ss.read(data);
-            HeapPage l = new HeapPage((HeapPageId) pid, data);
-            return l;
-        } catch (IOException o) {
+        int tableId = pid.getTableId();
+        int pgNo = pid.getPageNumber();
 
-        } finally { }
-        return null;
+        RandomAccessFile f = null;
+        try{
+            f = new RandomAccessFile(afile,"r");
+            if((pgNo+1)*BufferPool.getPageSize() > f.length()){
+                f.close();
+                throw new IllegalArgumentException(String.format("table %d page %d is invalid", tableId, pgNo));
+            }
+            byte[] bytes = new byte[BufferPool.getPageSize()];
+            f.seek(pgNo * BufferPool.getPageSize());
+            // big end
+            int read = f.read(bytes,0,BufferPool.getPageSize());
+            if(read != BufferPool.getPageSize()){
+                throw new IllegalArgumentException(String.format("table %d page %d read %d bytes", tableId, pgNo, read));
+            }
+            HeapPageId id = new HeapPageId(pid.getTableId(),pid.getPageNumber());
+            return new HeapPage(id,bytes);
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally {
+            try{
+                f.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        throw new IllegalArgumentException(String.format("table %d page %d is invalid", tableId, pgNo));
+
     }
 
     // see DbFile.java for javadocs
     public void writePage(Page page) throws IOException {
         // some code goes here
         // not necessary for lab1
+        RandomAccessFile ss = new RandomAccessFile(afile,"rwd");
+        byte[] bw=page.getPageData();
+        ss.seek(page.getId().getPageNumber()*BufferPool.getPageSize());
+        ss.write(bw);
     }
 
     /**

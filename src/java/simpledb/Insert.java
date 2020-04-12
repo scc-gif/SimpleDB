@@ -25,11 +25,13 @@ public class Insert extends Operator {
      */
     OpIterator achild;
     int tbaleid;
+    TransactionId at;
     public Insert(TransactionId t, OpIterator child, int tableId)
             throws DbException {
         // some code goes here
         achild=child;
         tbaleid=tableId;
+        at=t;
         if (!child.getTupleDesc().equals(Database.getCatalog().getTupleDesc(tableId))) {
             throw new DbException("TupleDesc of child differs from table into which we are to insert");
         }

@@ -251,11 +251,15 @@ public class TupleDesc implements Serializable {
      */
     public String toString() {
         // some code goes here
-        String astring=new String();
-        for (int i = 0; i <numFields() ; i++)
-        {
-            astring =astring.concat(items.get(i).fieldName);
+        String ans = new String();
+        for (int i = 0; i < numFields(); i++) {
+            ans += String.format("%s[%d](%s[%d])",
+                    items.get(i).fieldType, i, items.get(i).fieldName, i);
+            if (i != numFields() - 1) {
+                ans += ", ";
+            }
         }
-        return astring;
+        return ans;
     }
+
 }
