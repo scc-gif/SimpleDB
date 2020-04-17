@@ -18,7 +18,7 @@ public class HeapPage implements Page {
     final byte header[];
     final Tuple tuples[];
     final int numSlots;
-    boolean isd;
+    boolean isd=false;
     TransactionId dirtyid;
 
     byte[] oldData;
@@ -69,7 +69,7 @@ public class HeapPage implements Page {
     */
     private int getNumTuples() {        
         // some code goes here
-        return (int) BufferPool.getPageSize() * 8/ (this.td.getSize() * 8 + 1);
+        return (int) Math.floor(((double) BufferPool.getPageSize() * 8) / (this.td.getSize() * 8 + 1));
 
 
     }
@@ -81,7 +81,7 @@ public class HeapPage implements Page {
     private int getHeaderSize() {        
         
         // some code goes here
-        return (int) getNumTuples()/8;
+        return (int) Math.ceil((double) getNumTuples() / 8);
                  
     }
     
@@ -341,9 +341,9 @@ public class HeapPage implements Page {
         // some code goes here
         // not necessary for lab1
         if(value)
-            header[i/8]=(byte) (header[i/8]|((byte)(1<<(i%8))));
+            header[i/8]=(byte) (header[i/8]|(((byte)(1<<(i%8)))));
         else
-            header[i/8]=(byte) (header[i/8]&(~(byte)(1<<(i%8))));
+            header[i/8]=(byte) (header[i/8]&(~((byte)(1<<(i%8)))));
     }
 
     /**
@@ -356,10 +356,16 @@ public class HeapPage implements Page {
      * *（注意，这个迭代器不应该返回空槽中的元组！）
      */
 
+    static class noremoveList extends ArrayList<Tuple> {
+        public void remove() {
+            throw new UnsupportedOperationException("you can`t use it");
+        }
+    }
+
     public Iterator<Tuple> iterator() {
         // some code goes here
 
-        List<Tuple> list = new ArrayList();
+        List<Tuple> list = new noremoveList();
         for (int i = 0; i < tuples.length; i++)
         {
             if (isSlotUsed(i))

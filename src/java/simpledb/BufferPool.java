@@ -29,8 +29,6 @@ public class BufferPool {
     constructor instead. */
     public static final int DEFAULT_PAGES = 50;
     ConcurrentHashMap<PageId,Page> totpage;
-    Page[] pages;
-    int used;
     int numpage;
     ConcurrentHashMap<PageId, Integer> usedTime;
     int nowTime=0;
@@ -92,7 +90,7 @@ public class BufferPool {
             totpage.put(needPut.getId(), needPut);
             return needPut;
         } catch (IOException e) {
-
+            e.printStackTrace();
 
         }
         return null;
@@ -242,7 +240,7 @@ public class BufferPool {
             flushPage(now);
             discardPage(now);
         } catch (IOException e) {
-
+            e.printStackTrace();
         }
     }
 
