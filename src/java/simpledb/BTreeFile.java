@@ -20,6 +20,7 @@ import simpledb.Predicate.Op;
  */
 public class BTreeFile implements DbFile {
 
+
 	private final File f;
 	private final TupleDesc td;
 	private final int tableid ;
@@ -192,9 +193,40 @@ public class BTreeFile implements DbFile {
 	 * 
 	 */
 	private BTreeLeafPage findLeafPage(TransactionId tid, HashMap<PageId, Page> dirtypages, BTreePageId pid, Permissions perm,
-			Field f) 
+			Field f)
 					throws DbException, TransactionAbortedException {
 		// some code goes here
+		if(pid.pgcateg()==BTreePageId.LEAF)
+		{
+			try {
+				return (BTreeLeafPage) getPage(tid, dirtypages, pid, perm);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		BTreeInternalPageIterator iterator= null;
+		try {
+			iterator = new BTreeInternalPageIterator((BTreeInternalPage) getPage(tid, dirtypages, pid, perm));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		while (iterator.hasNext())
+		{
+			BTreeEntry bte=iterator.next();
+			if(f==null)
+			{
+				return  findLeafPage(tid, dirtypages, bte.getLeftChild(), perm, null);
+			}else
+			{
+				if(f.compare(Op.LESS_THAN_OR_EQ, bte.getKey()))
+				{
+					return findLeafPage(tid, dirtypages, bte.getLeftChild(), perm, f);
+				}else if(!iterator.hasNext())
+				{
+					return findLeafPage(tid, dirtypages, bte.getRightChild(), perm, f);
+				}
+			}
+		}
         return null;
 	}
 	
@@ -211,7 +243,7 @@ public class BTreeFile implements DbFile {
 	 * 
 	 */
 	BTreeLeafPage findLeafPage(TransactionId tid, BTreePageId pid, Permissions perm,
-			Field f) 
+			Field f)
 					throws DbException, TransactionAbortedException {
 		return findLeafPage(tid, new HashMap<PageId, Page>(), pid, perm, f);
 	}
