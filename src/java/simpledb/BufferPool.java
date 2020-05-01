@@ -82,7 +82,7 @@ public class BufferPool {
             return totpage.get(pid);
         }
         try {
-            if (totpage.size() == numpage) {
+            while (totpage.size() >= numpage) {
                 evictPage();
                 HeapPage p = (HeapPage) Database.getBufferPool().getPage(null, pid, null);
             }
