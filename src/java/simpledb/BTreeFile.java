@@ -941,6 +941,7 @@ public class BTreeFile implements DbFile {
 		deleteParentEntry(tid, dirtypages, leftPage, parent, parentEntry);
 		updateParentPointers(tid, dirtypages, parent);
 		updateParentPointers(tid, dirtypages, leftPage);
+		
         // Move all the entries from the right page to the left page, update
 		// the parent pointers of the children in the entries that were moved, 
 		// and make the right page available for reuse
